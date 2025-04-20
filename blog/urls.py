@@ -1,8 +1,13 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from . import views
 
+router = DefaultRouter()
+router.register(r'admin/posts', views.AdminPostViewSet)
+router.register(r'posts', views.UserPostViewSet, basename='user-post')
+
+app_name = 'blog'
 
 urlpatterns = [
-    path('', views.IndexView.as_view(), name='index'),
-    path('posts/', views.PostListView.as_view(), name='post_list')
+    path('', include(router.urls)),
 ]

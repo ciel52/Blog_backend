@@ -18,11 +18,18 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
+from rest_framework.authtoken import views
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.http import JsonResponse
 
+def get_csrf_token(request):
+    return JsonResponse({'detail': 'CSRF cookie set'})
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('blog/', include('blog.urls'))
+    path('blog/', include('blog.urls')),
+    path('api/token/', views.obtain_auth_token),
+    path('api/csrf-token/', ensure_csrf_cookie(get_csrf_token)),
 ]
 
 if settings.DEBUG:
