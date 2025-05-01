@@ -21,6 +21,11 @@ from django.conf import settings
 from rest_framework.authtoken import views
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.http import JsonResponse
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+    TokenVerifyView,
+)
 
 def get_csrf_token(request):
     return JsonResponse({'detail': 'CSRF cookie set'})
@@ -28,7 +33,9 @@ def get_csrf_token(request):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('blog/', include('blog.urls')),
-    path('api/token/', views.obtain_auth_token),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     path('api/csrf-token/', ensure_csrf_cookie(get_csrf_token)),
 ]
 

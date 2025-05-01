@@ -1,16 +1,11 @@
 from django.shortcuts import render
 from django.views.generic import TemplateView
-from rest_framework import viewsets, filters, permissions, generics, mixins
+from rest_framework import viewsets, mixins
 from django.http import JsonResponse
 from .serializers import UserPostSerializer, AdminPostSerializer
 from .models import Post
-from rest_framework_api_key.permissions import HasAPIKey
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from django.http import Http404
-from django.utils.text import slugify
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
 import logging
 
 logger = logging.getLogger(__name__)
@@ -43,18 +38,29 @@ class AdminPostViewSet(viewsets.ModelViewSet):
     """
     serializer_class = AdminPostSerializer
     queryset = Post.objects.all()
-    authentication_classes = [SessionAuthentication, BasicAuthentication, TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAdminUser]
 
     def create(self, request, *args, **kwargs):
         try:
-            logger.info(f"Received data: {request.data}")
-            logger.info(f"Auth: {request.auth}")
-            logger.info(f"User: {request.user}")
-            logger.info(f"Headers: {request.headers}")
-            logger.info(f"Is Admin: {request.user.is_staff}")
-            logger.info(f"Is Superuser: {request.user.is_superuser}")
+            logger.info(f"管理者による投稿作成: {request.user.username}")
             return super().create(request, *args, **kwargs)
         except Exception as e:
-            logger.error(f"Error creating post: {str(e)}")
+            logger.error(f"投稿作成エラー: {str(e)}")
+            return JsonResponse({"error": str(e)}, status=500)
+
+    def update(self, request, *args, **kwargs):
+        try:
+            logger.info(f"管理者による投稿更新: {request.user.username}")
+            return super().update(request, *args, **kwargs)
+        except Exception as e:
+            logger.error(f"投稿更新エラー: {str(e)}")
+            return JsonResponse({"error": str(e)}, status=500)
+
+    def partial_update(self, request, *args, **kwargs):
+        try:
+            logger.info(f"管理者による投稿部分更新: {request.user.username}")
+            return super().partial_update(request, *args, **kwargs)
+        except Exception as e:
+            logger.error(f"投稿部分更新エラー: {str(e)}")
             return JsonResponse({"error": str(e)}, status=500)
